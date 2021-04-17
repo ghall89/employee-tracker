@@ -62,14 +62,13 @@ const viewByManager = callback => {
 				choices: employeeList
 			}
 		])
-		.then(answers => {
-			const managerName = answers.manager.split(" ");
+		.then(answers => {;
 			const sql = `SELECT * FROM employees
 									LEFT JOIN roles 
 									ON employees.role_id = roles.id
 									LEFT JOIN departments 
 									ON roles.department_id = departments.id
-									WHERE manager = '${managerName[0]}'
+									WHERE manager = '${answers.manager}'
 									ORDER BY last_name;`;
 			displayTable(sql, callback);
 		})
