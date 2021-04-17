@@ -87,51 +87,91 @@ const viewByManager = callback => {
 
 const addEmployee = (callback) => {
 	const roleList = [];
-	sql = `SELECT * FROM roles`;
+	const employeeList = [];
 
-	db.query(sql, (err, roles) => {
+	db.query(`SELECT * FROM roles`, (err, roles) => {
 		if (err) {
-			console.log("There was an error");
+			console.log(err);
 			return;
 		}
 		for (let i = 0; i < roles.length; i++) {
 			roleList.push(roles[i].title);
 		}
 		
-		inquirer
-		.prompt([
-			{
-				type: 'list',
-				name: 'role',
-				message: 'Pick a role:',
-				choices: roleList
-			},
-			{
-				type: 'input',
-				name: 'firstName',
-				message: 'First name:'
-			},
-			{
-				type: 'input',
-				name: 'lastName',
-				message: 'Last name:'
-			},
-			{
-				type: 'input',
-				name: 'managerName',
-				message: "Manager's first name:"
+		db.query('SELECT * FROM employees', (err, employees) => {
+			if (err) {
+				console.log(err);
+				return;
 			}
-		])
-		.then(answers => {
-			console.table(answers);
-			callback();
-		})
-		.catch(error => {
-			if(error.isTtyError) {
-				console.log(error);
-			} else {
-				console.log('Something went wrong.')
-			}
+			for (let i = 0; i < employees.length; i++) {
+				const result = `${employees[i].first_name} ${employees[i].last_name}`;
+				employeeList.push(result);
+			}			
+			inquirer
+			.prompt([
+				{
+					type: 'list',
+					name: 'role',
+					message: 'Pick a role:',
+					choices: roleList
+				},
+				{
+					type: 'input',
+					name: 'firstName',
+					message: 'First name:',
+					validate: input => {
+						if (input) {
+							return true;
+						} else {
+							console.log('Please enter a first name!');
+							return false;
+						}
+					}
+				},
+				{
+					type: 'input',
+					name: 'lastName',
+					message: 'Last name:',
+					validate: input => {
+						if (input) {
+							return true;
+						} else {
+							console.log('Please enter a last name!');
+							return false;
+						}
+					}
+				},
+				{
+					type: 'list',
+					name: 'managerName',
+					message: "Manager's name:",
+					choices: employeeList
+				}
+			])
+			.then(answers => {
+				const roleId = roleList.indexOf(answers.role) + 1;
+
+				const sql = `
+				INSERT INTO employees (first_name, last_name, role_id, manager)
+				VALUES ('${answers.firstName}', '${answers.lastName}', ${roleId}, '${answers.managerName}');
+				`;
+				
+				db.query(sql, (err, input) => {
+					if (err) {
+						console.log(err);
+						return;
+					}
+					console.log(`New employee, ${answers.firstName} ${answers.lastName} saved to records.`)
+				});
+				callback();
+			})
+			.catch(error => {
+				if(error.isTtyError) {
+					console.log(error);
+				} else {
+					console.log(error);
+				}
+			});
 		});
 		
 	});
