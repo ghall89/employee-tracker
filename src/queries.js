@@ -69,8 +69,8 @@ const viewByManager = callback => {
 									ON employees.role_id = roles.id
 									LEFT JOIN departments 
 									ON roles.department_id = departments.id
-									WHERE manager = '${managerName[0]}';
-									ORDER BY last_name;;`;
+									WHERE manager = '${managerName[0]}'
+									ORDER BY last_name;`;
 			displayTable(sql, callback);
 		})
 		.catch(error => {
