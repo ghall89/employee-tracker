@@ -13,6 +13,7 @@ const db = mysql.createConnection(
 		database: 'employees'
 });
 
+// pass employee data and display as table
 const displayTable = (sql, callback) => {
 
 	db.query(sql, (err, employees) => {
@@ -21,10 +22,10 @@ const displayTable = (sql, callback) => {
 			return;
 		}
 		
+		// create an array of objects containing the relevant data
 		const table = [];
-		
 		for (let i = 0; i < employees.length; i++) {
-			
+
 			row = {
 				firstName: employees[i].first_name,
 				lastName: employees[i].last_name,
@@ -44,6 +45,7 @@ const displayTable = (sql, callback) => {
 	});
 }
 
+// display employees by department id
 const viewByDepartment = callback => {
 	db.query('SELECT * FROM departments', (err, departments) => {
 		if (err) {
@@ -86,6 +88,7 @@ const viewByDepartment = callback => {
 	});
 };
 
+// display employees by manager
 const viewByManager = callback => {
 	
 	db.query('SELECT * FROM employees', (err, employees) => {
@@ -127,9 +130,90 @@ const viewByManager = callback => {
 		});
 			
 	});
+};
 
-	// displayTable(sql, callback)
-}
+// modify an employee's role
+const modifyRole = (callback) => {
+	const roleList = [];
+	const employeeList = [];
+	
+	db.query('SELECT * FROM employees', (err, employees) => {
+		if (err) {
+			console.log(err);
+			return;
+		}
+		
+		for (let i = 0; i < employees.length; i++) {
+			const result = `${employees[i].first_name} ${employees[i].last_name}`;
+			employeeList.push(result);
+		}
+		inquirer
+		.prompt([
+			{
+				type: 'list',
+				name: 'employee',
+				message: 'Pick employee record to modify:',
+				choices: employeeList
+			}
+		])
+		.then(answers => {
+			const employeeName = answers.employee.split(' ');
+			
+			db.query('SELECT * FROM roles', (err, roles) => {
+				if (err) {
+					console.log(err);
+					return;
+				}
+				for (let i = 0; i < roles.length; i++) {
+					roleList.push(roles[i].title);
+				}
+				inquirer
+				.prompt([
+					{
+						type: 'list',
+						name: 'role',
+						message: 'Pick a role:',
+						choices: roleList
+					}
+				])
+				.then(answers => {
+					const roleId = roleList.indexOf(answers.role) + 1;
+					
+					const sql = `
+					UPDATE employees
+					SET role_id = ${roleId}
+					WHERE first_name = '${employeeName[0]}'
+					AND last_name = '${employeeName[1]}';
+					`;
+					
+					db.query(sql, (err, input) => {
+						if (err) {
+							console.log(err);
+							return;
+						}
+						console.log(`${employeeName[0]} ${employeeName[1]}'s role modified.`);
+						callback();
+					});
+				})
+				.catch(error => {
+					if(error.isTtyError) {
+						console.log(error);
+					} else {
+						console.log(error);
+					}
+				});	
+			});
+
+		})
+		.catch(error => {
+			if(error.isTtyError) {
+				console.log(error);
+			} else {
+				console.log(error);
+			}
+		});	
+	});
+};
 
 const addEmployee = (callback) => {
 	const roleList = [];
@@ -275,4 +359,4 @@ const deleteEmployee = (callback) => {
 	});
 };
 
-module.exports = {displayTable, viewByDepartment, viewByManager, addEmployee, deleteEmployee};
+module.exports = {displayTable, viewByDepartment, viewByManager, modifyRole, addEmployee, deleteEmployee};

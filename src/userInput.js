@@ -1,7 +1,7 @@
 // import modules
 const inquirer = require('inquirer');
 
-const {displayTable, viewByDepartment, viewByManager, addEmployee, deleteEmployee} = require('./queries');
+const {displayTable, viewByDepartment, viewByManager, modifyRole, addEmployee, deleteEmployee} = require('./queries');
 
 let sql = '';
 
@@ -16,6 +16,7 @@ const userInput = () => {
 				'View all employees', 
 				'View employees by department',
 				'View employees by manager',
+				'Modify an employee role',
 				'Add employee',
 				'Delete employee',
 				'Quit'
@@ -38,6 +39,9 @@ const userInput = () => {
 				break;
 			case 'View employees by manager':
 				viewByManager(userInput);
+				break;
+			case 'Modify an employee role':
+				modifyRole(userInput);
 				break;
 			case 'Add employee':
 				addEmployee(userInput);
