@@ -4,7 +4,7 @@
 
 ## Description
 
-We all need to jot down notes once in a while, for work, school, or just in our daily lives. Note-taker is an express-based web app that allows you to quickly and simply jot down notes, and quickly recall them. 
+A command line tool to add, delete, and modify employee records in an SQL database.
 
 ![](screenshot.png)
 
