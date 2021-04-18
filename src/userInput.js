@@ -1,44 +1,9 @@
 // import modules
 const inquirer = require('inquirer');
 
-const {displayTable, viewByManager, addEmployee, deleteEmployee} = require('./queries');
+const {displayTable, viewByDepartment, viewByManager, addEmployee, deleteEmployee} = require('./queries');
 
 let sql = '';
-
-const chooseDept = () => {
-	inquirer
-		.prompt([
-			{
-				type: 'list',
-				name: 'department',
-				message: 'Choose a department',
-				choices: [
-					'HR',
-					'Engineering',
-					'Sales',
-					'Marketing'				
-				]
-			}
-		])
-		.then(answers => {
-			sql = `SELECT * FROM employees
-						LEFT JOIN roles 
-						ON employees.role_id = roles.id
-						LEFT JOIN departments 
-						ON roles.department_id = departments.id
-						WHERE name = '${answers.department}'
-						ORDER BY last_name;;`;
-			displayTable(sql, userInput);
-		})
-		.catch(error => {
-			if(error.isTtyError) {
-				console.log(error);
-			} else {
-				console.log('Something went wrong.')
-			}
-		});
-	
-}
 
 const userInput = () => {
 	inquirer
@@ -69,7 +34,7 @@ const userInput = () => {
 				displayTable(sql, userInput);
 				break;
 			case 'View employees by department':
-				chooseDept();
+				viewByDepartment(userInput);
 				break;
 			case 'View employees by manager':
 				viewByManager(userInput);
@@ -88,7 +53,7 @@ const userInput = () => {
 		if(error.isTtyError) {
 			console.log(error);
 		} else {
-			console.log('Something went wrong.')
+			console.log(error)
 		}
 	});
 }

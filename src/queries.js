@@ -44,9 +44,55 @@ const displayTable = (sql, callback) => {
 	});
 }
 
+const viewByDepartment = callback => {
+	db.query('SELECT * FROM departments', (err, departments) => {
+		if (err) {
+			console.log(err);
+			return;
+		}
+		const departmentList = [];
+		
+		for (let i = 0; i < departments.length; i++) {;
+			departmentList.push(departments[i].name);
+		}
+		
+		inquirer
+		.prompt([
+			{
+				type: 'list',
+				name: 'department',
+				message: 'Pick a department:',
+				choices: departmentList
+			}
+		])
+		.then(answers => {;
+			const sql = `SELECT * FROM employees
+									LEFT JOIN roles 
+									ON employees.role_id = roles.id
+									LEFT JOIN departments 
+									ON roles.department_id = departments.id
+									WHERE name = '${answers.department}'
+									ORDER BY last_name;`;
+			displayTable(sql, callback);
+		})
+		.catch(error => {
+			if(error.isTtyError) {
+				console.log(error);
+			} else {
+				console.log(error);
+			}
+		});
+	
+	});
+};
+
 const viewByManager = callback => {
 	
 	db.query('SELECT * FROM employees', (err, employees) => {
+		if (err) {
+			console.log(err);
+			return;
+		}
 		const employeeList = [];
 		
 		for (let i = 0; i < employees.length; i++) {
@@ -161,9 +207,9 @@ const addEmployee = (callback) => {
 						console.log(err);
 						return;
 					}
-					console.log(`New employee, ${answers.firstName} ${answers.lastName} saved to records.`)
+					console.log(`New employee, ${answers.firstName} ${answers.lastName} saved to records.`);
+					callback();
 				});
-				callback();
 			})
 			.catch(error => {
 				if(error.isTtyError) {
@@ -179,8 +225,54 @@ const addEmployee = (callback) => {
 };
 
 const deleteEmployee = (callback) => {
-	
-	callback();
+	db.query('SELECT * FROM employees', (err, employees) => {
+		if (err) {
+			console.log(err);
+			return;
+		}
+		const employeeList = [];
+		
+		for (let i = 0; i < employees.length; i++) {
+			const result = `${employees[i].first_name} ${employees[i].last_name}`;
+			employeeList.push(result);
+		}
+		inquirer
+		.prompt([
+			{
+				type: 'list',
+				name: 'employee',
+				message: 'Choose an employee to delete:',
+				choices: employeeList
+			}
+		])
+		.then(answers => {
+			
+			const employeeName = answers.employee.split(' ');
+			
+			const sql =`
+			DELETE FROM employees
+			WHERE first_name = '${employeeName[0]}'
+			AND last_name = '${employeeName[1]}';
+			`;
+			
+			db.query(sql, (err, input) => {
+				if (err) {
+					console.log(err);
+					return;
+				}
+				console.log(`${employeeName[0]} ${employeeName[1]} deleted from records.`);
+				callback();
+			});
+			
+		})
+		.catch(error => {
+			if(error.isTtyError) {
+				console.log(error);
+			} else {
+				console.log(error);
+			}
+		});
+	});
 };
 
-module.exports = {displayTable, viewByManager, addEmployee, deleteEmployee};
+module.exports = {displayTable, viewByDepartment, viewByManager, addEmployee, deleteEmployee};
